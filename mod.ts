@@ -1,4 +1,5 @@
-import { StoragePlugin, SerializerPlugin, TransformerPlugin, MaybeAsync } from "./types.ts";
+import { StoragePlugin, SerializerPlugin, TransformerPlugin } from "./types.ts";
+import { resolveMaybeAsync } from "./utils.ts";
 
 /**
  * KeyValueStore class provides a flexible interface for working with key-value storage.
@@ -27,40 +28,36 @@ export default class KeyValueStore {
     this.transformers = transformers;
   }
 
-  private async resolveMaybeAsync<T>(value: MaybeAsync<T>): Promise<T> {
-    return value instanceof Promise ? await value : value;
-  }
-
   async initialize(): Promise<void> {
-    await this.resolveMaybeAsync(this.storage.initialize());
-    await this.resolveMaybeAsync(this.serializer.initialize());
+    await resolveMaybeAsync(this.storage.initialize());
+    await resolveMaybeAsync(this.serializer.initialize());
     for (const transformer of this.transformers) {
-      await this.resolveMaybeAsync(transformer.initialize());
+      await resolveMaybeAsync(transformer.initialize());
     }
   }
 
   async get(key: string): Promise<unknown | null> {
-    const storedData = await this.resolveMaybeAsync(this.storage.get(key));
+    const storedData = await resolveMaybeAsync(this.storage.get(key));
     if (!storedData) return null;
 
     let data = storedData;
     for (const transformer of [...this.transformers].reverse()) {
-      data = await this.resolveMaybeAsync(transformer.reverse(data));
+      data = await resolveMaybeAsync(transformer.reverse(data));
     }
 
-    return await this.resolveMaybeAsync(this.serializer.deserialize(data));
+    return await resolveMaybeAsync(this.serializer.deserialize(data));
   }
 
   async set(key: string, value: unknown): Promise<void> {
-    let data = await this.resolveMaybeAsync(this.serializer.serialize(value));
+    let data = await resolveMaybeAsync(this.serializer.serialize(value));
     for (const transformer of this.transformers) {
-      data = await this.resolveMaybeAsync(transformer.transform(data));
+      data = await resolveMaybeAsync(transformer.transform(data));
     }
 
-    await this.resolveMaybeAsync(this.storage.set(key, data));
+    await resolveMaybeAsync(this.storage.set(key, data));
   }
 
   async delete(key: string): Promise<void> {
-    await this.resolveMaybeAsync(this.storage.delete(key));
+    await resolveMaybeAsync(this.storage.delete(key));
   }
 }

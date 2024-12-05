@@ -1,7 +1,7 @@
 import { assertEquals } from "jsr:@std/assert";
 import KeyValueStore from "./mod.ts";
 import MemoryStoragePlugin from "./plugins/storage/memory.ts";
-import PersistentCacheStoragePlugin from "./plugins/storage/persistent_cache.ts";
+import PersistentStoragePlugin from "./plugins/storage/persistent.ts";
 import JSONSerializerPlugin from "./plugins/serializer/json.ts";
 import CompressionTransformerPlugin from "./plugins/transformer/compression.ts";
 import EncryptionTransformerPlugin from "./plugins/transformer/encryption.ts";
@@ -9,7 +9,7 @@ import EncryptionTransformerPlugin from "./plugins/transformer/encryption.ts";
 // Define all plugins
 const storagePlugins = [
   new MemoryStoragePlugin(),
-  new PersistentCacheStoragePlugin("./test-cache.json"),
+  new PersistentStoragePlugin("./test-cache.json"),
 ];
 
 const serializerPlugins = [

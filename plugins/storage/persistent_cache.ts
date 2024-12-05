@@ -1,6 +1,6 @@
 import { StoragePlugin } from "../../types.ts";
 
-export class PersistentCacheStoragePlugin implements StoragePlugin {
+export default class PersistentCacheStoragePlugin implements StoragePlugin {
   private filePath: string;
   private store: Map<string, Uint8Array> = new Map();
 

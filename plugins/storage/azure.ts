@@ -84,7 +84,7 @@ export default class AzureStoragePlugin implements StoragePlugin {
 
       if (entity.isBlob) {
         const blobClient = this.blobContainerClient
-          .getBlobClient(`${ partitionKey } / ${ rowKey }`);
+          .getBlobClient(`${partitionKey} / ${rowKey}`);
         const downloadResponse = await blobClient.download();
         const blobData = await this.streamToBuffer(downloadResponse.readableStreamBody!);
         return blobData;
@@ -113,7 +113,7 @@ export default class AzureStoragePlugin implements StoragePlugin {
       });
     } else {
       const blobClient = this.blobContainerClient
-        .getBlockBlobClient(`${ this.defaultPartitionKey } / ${ rowKey }`);
+        .getBlockBlobClient(`${this.defaultPartitionKey} / ${rowKey}`);
       await blobClient.uploadData(value);
       await this.tableClient.upsertEntity<KeyValueTableEntity>({
         partitionKey,
@@ -131,7 +131,7 @@ export default class AzureStoragePlugin implements StoragePlugin {
 
       if (entity.isBlob) {
         const blobClient = this.blobContainerClient
-          .getBlobClient(`${ this.defaultPartitionKey } / ${ rowKey }`);
+          .getBlobClient(`${this.defaultPartitionKey} / ${rowKey}`);
         await blobClient.deleteIfExists();
       }
 
@@ -139,6 +139,14 @@ export default class AzureStoragePlugin implements StoragePlugin {
     } catch (error) {
       if (isErrorWithStatusCode(error) && error.statusCode !== 404) throw error;
     }
+  }
+
+  async list(): Promise<Deno.KvKey[]> {
+    const keys: Deno.KvKey[] = [];
+    for await (const entity of this.tableClient.listEntities<KeyValueTableEntity>()) {
+      entity.rowKey && keys.push(this.deserializeKey(entity.rowKey));
+    }
+    return keys;
   }
 
   private streamToBuffer(readableStream: NodeJS.ReadableStream): Promise<Uint8Array> {

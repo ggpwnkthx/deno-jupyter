@@ -1,5 +1,5 @@
 import { StoragePlugin } from "../../types.ts";
-import { resolveMaybeAsync } from "../../utils.ts";
+import { resolveMaybeAsync } from "../../utils/maybe.ts";
 
 /**
  * CRUSH-based storage plugin.

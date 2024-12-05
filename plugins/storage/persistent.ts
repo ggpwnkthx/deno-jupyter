@@ -14,7 +14,7 @@ export default class PersistentStoragePlugin extends MemoryStoragePlugin {
       const parsed = JSON.parse(data) as Record<string, string>;
       this.store = new Map(
         Object.entries(parsed).map(([key, value]) => [
-          this.deserializeKey(key),
+          key,
           new Uint8Array(atob(value).split("").map((c) => c.charCodeAt(0))),
         ])
       );
@@ -29,25 +29,13 @@ export default class PersistentStoragePlugin extends MemoryStoragePlugin {
     }
   }
 
-  private serializeKey(key: Deno.KvKey): string {
-    return btoa(JSON.stringify(key))
-  }
-
-  private deserializeKey(key: string): Deno.KvKey {
-    return JSON.parse(atob(key))
-  }
-
-  override get(key: Deno.KvKey) {
-    return this.store.get(key) || null;
-  }
-
   override async set(key: Deno.KvKey, value: Uint8Array){
-    this.store.set(key, value);
+    super.set(key, value);
     await this.saveToFile();
   }
 
   override async delete(key: Deno.KvKey) {
-    this.store.delete(key);
+    super.delete(key);
     await this.saveToFile();
   }
 
@@ -57,7 +45,7 @@ export default class PersistentStoragePlugin extends MemoryStoragePlugin {
   private async saveToFile(): Promise<void> {
     const obj: Record<string, string> = {};
     for (const [key, value] of this.store.entries()) {
-      obj[this.serializeKey(key)] = btoa(String.fromCharCode(...value));
+      obj[key] = btoa(String.fromCharCode(...value));
     }
     await Deno.writeTextFile(this.filePath, JSON.stringify(obj, null, 2));
   }

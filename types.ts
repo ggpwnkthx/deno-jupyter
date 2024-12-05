@@ -82,10 +82,7 @@ export type StoragePlugin = Plugin & {
    */
   delete(key: Deno.KvKey): MaybeAsync<void>;
 
-  // list<T = unknown>(
-  //   selector: Deno.KvListSelector,
-  //   options?: Deno.KvListOptions
-  // ): MaybeAsync<Deno.KvListIterator<T>>;
+  list(): MaybeAsync<Deno.KvKey[]>;
 };
 
 /**

@@ -1,5 +1,5 @@
 import { StoragePlugin, SerializerPlugin, TransformerPlugin } from "./types.ts";
-import { resolveMaybeAsync } from "./utils.ts";
+import { resolveMaybeAsync } from "./utils/maybe.ts";
 
 /**
  * KeyValueStore class provides a flexible interface for working with key-value storage.
@@ -59,5 +59,9 @@ export default class KeyValueStore {
 
   async delete(key: Deno.KvKey): Promise<void> {
     await resolveMaybeAsync(this.storage.delete(key));
+  }
+
+  async list(): Promise<Deno.KvKey[]> {
+    return await resolveMaybeAsync(this.storage.list())
   }
 }

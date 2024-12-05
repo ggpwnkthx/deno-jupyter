@@ -8,10 +8,12 @@ import { resolveMaybeAsync } from "../../utils.ts";
 class CRUSHStoragePlugin implements StoragePlugin {
   private nodes: Map<string, StoragePlugin>; // Mapping of node IDs to storage plugins
   private availableNodes: Set<string>;      // Set of currently available node IDs
+  private ensure: Promise<void>[];
 
-  constructor() {
+  constructor(initialNodes: [string, StoragePlugin][] = []) {
     this.nodes = new Map();
     this.availableNodes = new Set();
+    this.ensure = [this.addNodes(initialNodes)]
   }
 
   /**
@@ -51,16 +53,13 @@ class CRUSHStoragePlugin implements StoragePlugin {
 
   /**
    * Initializes the CRUSH plugin by setting up nodes.
-   * @param initialNodes - Optional initial set of nodes to add during initialization.
    */
-  async initialize(initialNodes: [string, StoragePlugin][] = []): Promise<void> {
-    if (initialNodes.length > 0) {
-      await this.addNodes(initialNodes);
-    }
+  async initialize(): Promise<void> {
+    await Promise.all(this.ensure)
     console.debug("CRUSHStoragePlugin initialized.");
   }
 
-  async get(key: Deno.KvKey): Promise<Uint8Array | null> {
+  async get(key: Deno.KvKey) {
     if (this.availableNodes.size === 0) {
       throw new Error("No available nodes.");
     }
@@ -70,7 +69,7 @@ class CRUSHStoragePlugin implements StoragePlugin {
     return await resolveMaybeAsync(node?.get(key)) ?? null;
   }
 
-  async set(key: Deno.KvKey, value: Uint8Array): Promise<void> {
+  async set(key: Deno.KvKey, value: Uint8Array) {
     if (this.availableNodes.size === 0) {
       throw new Error("No available nodes.");
     }
@@ -82,7 +81,7 @@ class CRUSHStoragePlugin implements StoragePlugin {
     }
   }
 
-  async delete(key: Deno.KvKey): Promise<void> {
+  async delete(key: Deno.KvKey) {
     if (this.availableNodes.size === 0) {
       throw new Error("No available nodes.");
     }

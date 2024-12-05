@@ -11,22 +11,21 @@ import { StoragePlugin } from "../../types.ts";
  * - delete(key: string): Removes a value from the store.
  */
 export default class MemoryStoragePlugin implements StoragePlugin {
-  private store = new Map<Deno.KvKey, Uint8Array>();
+  protected store = new Map<Deno.KvKey, Uint8Array>();
 
   initialize(): void {
     console.debug("MemoryStoragePlugin initialized.");
   }
 
-  get(key: Deno.KvKey): Uint8Array | null {
+  get(key: Deno.KvKey) {
     return this.store.get(key) || null;
   }
 
-  set(key: Deno.KvKey, value: Uint8Array): void {
+  set(key: Deno.KvKey, value: Uint8Array) {
     this.store.set(key, value);
   }
 
-  delete(key: Deno.KvKey): void {
+  delete(key: Deno.KvKey) {
     this.store.delete(key);
   }
-
 }

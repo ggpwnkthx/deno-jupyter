@@ -1,14 +1,14 @@
-import { StoragePlugin } from "../../types.ts";
+import MemoryStoragePlugin from "./memory.ts";
 
-export default class PersistentStoragePlugin implements StoragePlugin {
+export default class PersistentStoragePlugin extends MemoryStoragePlugin {
   private filePath: string;
-  private store: Map<Deno.KvKey, Uint8Array> = new Map();
 
   constructor(filePath: string) {
+    super()
     this.filePath = filePath;
   }
   
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     try {
       const data = await Deno.readTextFile(this.filePath);
       const parsed = JSON.parse(data) as Record<string, string>;
@@ -37,16 +37,16 @@ export default class PersistentStoragePlugin implements StoragePlugin {
     return JSON.parse(atob(key))
   }
 
-  get(key: Deno.KvKey): Uint8Array | null {
+  override get(key: Deno.KvKey) {
     return this.store.get(key) || null;
   }
 
-  async set(key: Deno.KvKey, value: Uint8Array): Promise<void> {
+  override async set(key: Deno.KvKey, value: Uint8Array){
     this.store.set(key, value);
     await this.saveToFile();
   }
 
-  async delete(key: Deno.KvKey): Promise<void> {
+  override async delete(key: Deno.KvKey) {
     this.store.delete(key);
     await this.saveToFile();
   }

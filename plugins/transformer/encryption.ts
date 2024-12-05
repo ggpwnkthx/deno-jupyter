@@ -1,6 +1,6 @@
-import { Middleware } from "../types.ts";
+import { TransformerPlugin } from "../../types.ts";
 
-export class DefaultEncryptionMiddleware implements Middleware {
+export class EncryptionTransformerPlugin implements TransformerPlugin {
   private key: Promise<CryptoKey>; // AES-GCM key
   private algorithm: string = "AES-GCM";
   private ivLength: number = 12;
@@ -17,7 +17,11 @@ export class DefaultEncryptionMiddleware implements Middleware {
     );
   }
 
-  async do(data: Uint8Array): Promise<Uint8Array> {
+  initialize(): void {
+    console.debug("EncryptionTransformerPlugin initialized.");
+  }
+
+  async transform(data: Uint8Array): Promise<Uint8Array> {
     const iv = crypto.getRandomValues(new Uint8Array(this.ivLength));
     const encrypted = await crypto.subtle.encrypt(
       { name: this.algorithm, iv },
@@ -32,7 +36,7 @@ export class DefaultEncryptionMiddleware implements Middleware {
     return result;
   }
 
-  async undo(data: Uint8Array): Promise<Uint8Array> {
+  async reverse(data: Uint8Array): Promise<Uint8Array> {
     const iv = data.slice(0, this.ivLength);
     const encryptedContent = data.slice(this.ivLength);
 

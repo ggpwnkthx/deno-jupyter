@@ -1,7 +1,7 @@
 import { TableClient, TableServiceClient } from "npm:@azure/data-tables";
 import { ContainerClient, BlobServiceClient } from "npm:@azure/storage-blob";
 import { Buffer } from "node:buffer";
-import { StorageService } from "../types.ts";
+import { StoragePlugin } from "../../types.ts";
 
 type KeyValueTableEntity = {
   isBlob: boolean;
@@ -12,7 +12,7 @@ function isErrorWithStatusCode(error: unknown): error is { statusCode: number } 
   return typeof error === "object" && error !== null && "statusCode" in error;
 }
 
-export class AzureStorageService implements StorageService {
+export class AzureStoragePlugin implements StoragePlugin {
   private tableServiceClient: TableServiceClient;
   private tableClient: TableClient;
   private partitionKey: string;
@@ -47,9 +47,12 @@ export class AzureStorageService implements StorageService {
     }
   }
 
-  async get(key: string): Promise<Uint8Array | null> {
+  async initialize(): Promise<void> {
     await Promise.all(this.ensure);
+    console.debug("AzureStoragePlugin initialized.");
+  }
 
+  async get(key: string): Promise<Uint8Array | null> {
     try {
       const entity = await this.tableClient.getEntity<KeyValueTableEntity>(this.partitionKey, key);
 
@@ -73,9 +76,7 @@ export class AzureStorageService implements StorageService {
   }
 
   async set(key: string, value: Uint8Array): Promise<void> {
-    await Promise.all(this.ensure);
-
-    if (value.byteLength <= AzureStorageService.MAX_TABLE_SIZE) {
+    if (value.byteLength <= AzureStoragePlugin.MAX_TABLE_SIZE) {
       await this.tableClient.upsertEntity<KeyValueTableEntity>({
         partitionKey: this.partitionKey,
         rowKey: key,
@@ -95,8 +96,6 @@ export class AzureStorageService implements StorageService {
   }
 
   async delete(key: string): Promise<void> {
-    await Promise.all(this.ensure);
-
     try {
       const entity = await this.tableClient.getEntity<KeyValueTableEntity>(this.partitionKey, key);
 

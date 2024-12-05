@@ -1,14 +1,18 @@
 import { Buffer } from "node:buffer";
-import { Middleware } from "../types.ts";
+import { TransformerPlugin } from "../../types.ts";
 
-export class CompressionMiddleware implements Middleware {
+export class CompressionTransformerPlugin implements TransformerPlugin {
   private algorithm: "gzip" | "deflate";
 
   constructor(config: { algorithm?: "gzip" | "deflate" } = {}) {
     this.algorithm = config.algorithm || "gzip";
   }
 
-  async do(data: Uint8Array): Promise<Uint8Array> {
+  initialize(): void {
+    console.debug("CompressionTransformerPlugin initialized.");
+  }
+
+  async transform(data: Uint8Array): Promise<Uint8Array> {
     const compressed = new CompressionStream(this.algorithm);
     const writer = compressed.writable.getWriter();
     writer.write(data);
@@ -23,7 +27,7 @@ export class CompressionMiddleware implements Middleware {
     return Uint8Array.from(Buffer.concat(chunks));
   }
 
-  async undo(data: Uint8Array): Promise<Uint8Array> {
+  async reverse(data: Uint8Array): Promise<Uint8Array> {
     const decompressed = new DecompressionStream(this.algorithm);
     const writer = decompressed.writable.getWriter();
     writer.write(data);

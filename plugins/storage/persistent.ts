@@ -2,7 +2,7 @@ import { StoragePlugin } from "../../types.ts";
 
 export default class PersistentStoragePlugin implements StoragePlugin {
   private filePath: string;
-  private store: Map<string, Uint8Array> = new Map();
+  private store: Map<Deno.KvKey, Uint8Array> = new Map();
 
   constructor(filePath: string) {
     this.filePath = filePath;
@@ -14,7 +14,7 @@ export default class PersistentStoragePlugin implements StoragePlugin {
       const parsed = JSON.parse(data) as Record<string, string>;
       this.store = new Map(
         Object.entries(parsed).map(([key, value]) => [
-          key,
+          this.deserializeKey(key),
           new Uint8Array(atob(value).split("").map((c) => c.charCodeAt(0))),
         ])
       );
@@ -29,21 +29,25 @@ export default class PersistentStoragePlugin implements StoragePlugin {
     }
   }
 
-  private transformKey(key: Deno.KvKey): string {
-    return key.map(part => part.toString()).join(":")
+  private serializeKey(key: Deno.KvKey): string {
+    return btoa(JSON.stringify(key))
+  }
+
+  private deserializeKey(key: string): Deno.KvKey {
+    return JSON.parse(atob(key))
   }
 
   get(key: Deno.KvKey): Uint8Array | null {
-    return this.store.get(this.transformKey(key)) || null;
+    return this.store.get(key) || null;
   }
 
   async set(key: Deno.KvKey, value: Uint8Array): Promise<void> {
-    this.store.set(this.transformKey(key), value);
+    this.store.set(key, value);
     await this.saveToFile();
   }
 
   async delete(key: Deno.KvKey): Promise<void> {
-    this.store.delete(this.transformKey(key));
+    this.store.delete(key);
     await this.saveToFile();
   }
 
@@ -53,7 +57,7 @@ export default class PersistentStoragePlugin implements StoragePlugin {
   private async saveToFile(): Promise<void> {
     const obj: Record<string, string> = {};
     for (const [key, value] of this.store.entries()) {
-      obj[key] = btoa(String.fromCharCode(...value));
+      obj[this.serializeKey(key)] = btoa(String.fromCharCode(...value));
     }
     await Deno.writeTextFile(this.filePath, JSON.stringify(obj, null, 2));
   }

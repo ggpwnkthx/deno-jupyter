@@ -68,9 +68,17 @@ export default class AzureStoragePlugin implements StoragePlugin {
     console.debug("AzureStoragePlugin initialized.");
   }
 
+  private serializeKey(key: Deno.KvKey): string {
+    return btoa(JSON.stringify(key))
+  }
+
+  private deserializeKey(key: string): Deno.KvKey {
+    return JSON.parse(atob(key))
+  }
+
   async get(key: Deno.KvKey): Promise<Uint8Array | null> {
-    const partitionKey = key.length > 1 ? key[0].toString() : this.defaultPartitionKey
-    const rowKey = key.length === 1 ? key[0].toString() : key.slice(1).join("/")
+    const partitionKey = this.defaultPartitionKey
+    const rowKey = this.serializeKey(key)
     try {
       const entity = await this.tableClient.getEntity<KeyValueTableEntity>(partitionKey, rowKey);
 
@@ -94,8 +102,8 @@ export default class AzureStoragePlugin implements StoragePlugin {
   }
 
   async set(key: Deno.KvKey, value: Uint8Array): Promise<void> {
-    const partitionKey = key.length > 1 ? key[0].toString() : this.defaultPartitionKey
-    const rowKey = key.length === 1 ? key[0].toString() : key.slice(1).join("/")
+    const partitionKey = this.defaultPartitionKey
+    const rowKey = this.serializeKey(key)
     if (value.byteLength <= AzureStoragePlugin.MAX_TABLE_SIZE) {
       await this.tableClient.upsertEntity<KeyValueTableEntity>({
         partitionKey,
@@ -105,7 +113,7 @@ export default class AzureStoragePlugin implements StoragePlugin {
       });
     } else {
       const blobClient = this.blobContainerClient
-        .getBlockBlobClient(`${ this.defaultPartitionKey } / ${ key }`);
+        .getBlockBlobClient(`${ this.defaultPartitionKey } / ${ rowKey }`);
       await blobClient.uploadData(value);
       await this.tableClient.upsertEntity<KeyValueTableEntity>({
         partitionKey,
@@ -116,14 +124,14 @@ export default class AzureStoragePlugin implements StoragePlugin {
   }
 
   async delete(key: Deno.KvKey): Promise<void> {
-    const partitionKey = key.length > 1 ? key[0].toString() : this.defaultPartitionKey
-    const rowKey = key.length === 1 ? key[0].toString() : key.slice(1).join("/")
+    const partitionKey = this.defaultPartitionKey
+    const rowKey = this.serializeKey(key)
     try {
       const entity = await this.tableClient.getEntity<KeyValueTableEntity>(partitionKey, rowKey);
 
       if (entity.isBlob) {
         const blobClient = this.blobContainerClient
-          .getBlobClient(`${ this.defaultPartitionKey } / ${ key }`);
+          .getBlobClient(`${ this.defaultPartitionKey } / ${ rowKey }`);
         await blobClient.deleteIfExists();
       }
 

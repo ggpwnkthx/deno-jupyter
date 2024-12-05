@@ -31,7 +31,7 @@ function isErrorWithStatusCode(error: unknown): error is { statusCode: number } 
 export default class AzureStoragePlugin implements StoragePlugin {
   private tableServiceClient: TableServiceClient;
   private tableClient: TableClient;
-  private partitionKey: string;
+  private defaultPartitionKey: string;
   private blobServiceClient: BlobServiceClient;
   private blobContainerClient: ContainerClient;
 
@@ -43,7 +43,7 @@ export default class AzureStoragePlugin implements StoragePlugin {
     this.tableClient = TableClient.fromConnectionString(connectionString, tableName);
     this.blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
     this.blobContainerClient = this.blobServiceClient.getContainerClient(tableName);
-    this.partitionKey = partitionKey;
+    this.defaultPartitionKey = partitionKey;
 
     this.ensure = [this.ensureTableExists(), this.ensureContainerExists()];
   }
@@ -68,13 +68,15 @@ export default class AzureStoragePlugin implements StoragePlugin {
     console.debug("AzureStoragePlugin initialized.");
   }
 
-  async get(key: string): Promise<Uint8Array | null> {
+  async get(key: Deno.KvKey): Promise<Uint8Array | null> {
+    const partitionKey = key.length > 1 ? key[0].toString() : this.defaultPartitionKey
+    const rowKey = key.length === 1 ? key[0].toString() : key.slice(1).join("/")
     try {
-      const entity = await this.tableClient.getEntity<KeyValueTableEntity>(this.partitionKey, key);
+      const entity = await this.tableClient.getEntity<KeyValueTableEntity>(partitionKey, rowKey);
 
       if (entity.isBlob) {
         const blobClient = this.blobContainerClient
-          .getBlobClient(`${ this.partitionKey } / ${ key }`);
+          .getBlobClient(`${ partitionKey } / ${ rowKey }`);
         const downloadResponse = await blobClient.download();
         const blobData = await this.streamToBuffer(downloadResponse.readableStreamBody!);
         return blobData;
@@ -91,37 +93,41 @@ export default class AzureStoragePlugin implements StoragePlugin {
     }
   }
 
-  async set(key: string, value: Uint8Array): Promise<void> {
+  async set(key: Deno.KvKey, value: Uint8Array): Promise<void> {
+    const partitionKey = key.length > 1 ? key[0].toString() : this.defaultPartitionKey
+    const rowKey = key.length === 1 ? key[0].toString() : key.slice(1).join("/")
     if (value.byteLength <= AzureStoragePlugin.MAX_TABLE_SIZE) {
       await this.tableClient.upsertEntity<KeyValueTableEntity>({
-        partitionKey: this.partitionKey,
-        rowKey: key,
+        partitionKey,
+        rowKey,
         data: value,
         isBlob: false,
       });
     } else {
       const blobClient = this.blobContainerClient
-        .getBlockBlobClient(`${ this.partitionKey } / ${ key }`);
+        .getBlockBlobClient(`${ this.defaultPartitionKey } / ${ key }`);
       await blobClient.uploadData(value);
       await this.tableClient.upsertEntity<KeyValueTableEntity>({
-        partitionKey: this.partitionKey,
-        rowKey: key,
+        partitionKey,
+        rowKey,
         isBlob: true,
       });
     }
   }
 
-  async delete(key: string): Promise<void> {
+  async delete(key: Deno.KvKey): Promise<void> {
+    const partitionKey = key.length > 1 ? key[0].toString() : this.defaultPartitionKey
+    const rowKey = key.length === 1 ? key[0].toString() : key.slice(1).join("/")
     try {
-      const entity = await this.tableClient.getEntity<KeyValueTableEntity>(this.partitionKey, key);
+      const entity = await this.tableClient.getEntity<KeyValueTableEntity>(partitionKey, rowKey);
 
       if (entity.isBlob) {
         const blobClient = this.blobContainerClient
-          .getBlobClient(`${ this.partitionKey } / ${ key }`);
+          .getBlobClient(`${ this.defaultPartitionKey } / ${ key }`);
         await blobClient.deleteIfExists();
       }
 
-      await this.tableClient.deleteEntity(this.partitionKey, key);
+      await this.tableClient.deleteEntity(partitionKey, rowKey);
     } catch (error) {
       if (isErrorWithStatusCode(error) && error.statusCode !== 404) throw error;
     }

@@ -67,20 +67,20 @@ export type StoragePlugin = Plugin & {
    * @param key - The key to retrieve.
    * @returns The stored value as Uint8Array or null if the key does not exist.
    */
-  get(key: string): MaybeAsync<Uint8Array | null>;
+  get(key: Deno.KvKey): MaybeAsync<Uint8Array | null>;
   /**
    * Stores the given value under the specified key.
    *
    * @param key - The key to store the value under.
    * @param value - The value to store as Uint8Array.
    */
-  set(key: string, value: Uint8Array): MaybeAsync<void>;
+  set(key: Deno.KvKey, value: Uint8Array): MaybeAsync<void>;
   /**
    * Deletes the value associated with the specified key.
    *
    * @param key - The key to delete.
    */
-  delete(key: string): MaybeAsync<void>;
+  delete(key: Deno.KvKey): MaybeAsync<void>;
 };
 
 /**

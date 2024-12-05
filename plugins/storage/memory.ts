@@ -17,15 +17,19 @@ export default class MemoryStoragePlugin implements StoragePlugin {
     console.debug("MemoryStoragePlugin initialized.");
   }
 
-  get(key: string): Uint8Array | null {
-    return this.store.get(key) || null;
+  private transformKey(key: Deno.KvKey): string {
+    return key.map(part => part.toString()).join(":")
   }
 
-  set(key: string, value: Uint8Array): void {
-    this.store.set(key, value);
+  get(key: Deno.KvKey): Uint8Array | null {
+    return this.store.get(this.transformKey(key)) || null;
   }
 
-  delete(key: string): void {
-    this.store.delete(key);
+  set(key: Deno.KvKey, value: Uint8Array): void {
+    this.store.set(this.transformKey(key), value);
+  }
+
+  delete(key: Deno.KvKey): void {
+    this.store.delete(this.transformKey(key));
   }
 }

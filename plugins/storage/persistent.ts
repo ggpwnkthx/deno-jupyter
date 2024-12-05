@@ -1,6 +1,6 @@
 import { StoragePlugin } from "../../types.ts";
 
-export default class PersistentCacheStoragePlugin implements StoragePlugin {
+export default class PersistentStoragePlugin implements StoragePlugin {
   private filePath: string;
   private store: Map<string, Uint8Array> = new Map();
 
@@ -29,17 +29,21 @@ export default class PersistentCacheStoragePlugin implements StoragePlugin {
     }
   }
 
-  get(key: string): Uint8Array | null {
-    return this.store.get(key) || null;
+  private transformKey(key: Deno.KvKey): string {
+    return key.map(part => part.toString()).join(":")
   }
 
-  async set(key: string, value: Uint8Array): Promise<void> {
-    this.store.set(key, value);
+  get(key: Deno.KvKey): Uint8Array | null {
+    return this.store.get(this.transformKey(key)) || null;
+  }
+
+  async set(key: Deno.KvKey, value: Uint8Array): Promise<void> {
+    this.store.set(this.transformKey(key), value);
     await this.saveToFile();
   }
 
-  async delete(key: string): Promise<void> {
-    this.store.delete(key);
+  async delete(key: Deno.KvKey): Promise<void> {
+    this.store.delete(this.transformKey(key));
     await this.saveToFile();
   }
 

@@ -43,9 +43,9 @@ class CRUSHStoragePlugin implements StoragePlugin {
    * @param key - The key to map to a node.
    * @returns The selected node's ID.
    */
-  private selectNode(key: string): string {
+  private selectNode(key: Deno.KvKey): string {
     const nodeArray = Array.from(this.availableNodes);
-    const hash = [...key].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = [...key.map(part => part.toString()).join(":")].reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return nodeArray[hash % nodeArray.length];
   }
 
@@ -60,7 +60,7 @@ class CRUSHStoragePlugin implements StoragePlugin {
     console.debug("CRUSHStoragePlugin initialized.");
   }
 
-  async get(key: string): Promise<Uint8Array | null> {
+  async get(key: Deno.KvKey): Promise<Uint8Array | null> {
     if (this.availableNodes.size === 0) {
       throw new Error("No available nodes.");
     }
@@ -70,7 +70,7 @@ class CRUSHStoragePlugin implements StoragePlugin {
     return await resolveMaybeAsync(node?.get(key)) ?? null;
   }
 
-  async set(key: string, value: Uint8Array): Promise<void> {
+  async set(key: Deno.KvKey, value: Uint8Array): Promise<void> {
     if (this.availableNodes.size === 0) {
       throw new Error("No available nodes.");
     }
@@ -82,7 +82,7 @@ class CRUSHStoragePlugin implements StoragePlugin {
     }
   }
 
-  async delete(key: string): Promise<void> {
+  async delete(key: Deno.KvKey): Promise<void> {
     if (this.availableNodes.size === 0) {
       throw new Error("No available nodes.");
     }

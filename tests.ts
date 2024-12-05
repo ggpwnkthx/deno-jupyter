@@ -22,8 +22,8 @@ const transformerPlugins = [
 ];
 
 // Function to generate a random key
-function generateRandomKey(): string {
-  return `test-key-${crypto.randomUUID()}`;
+function generateRandomKey(): Deno.KvKey {
+  return ["test", "key", crypto.randomUUID()];
 }
 
 // Test value with diverse data types

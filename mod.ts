@@ -1,5 +1,17 @@
 import { StoragePlugin, SerializerPlugin, TransformerPlugin, MaybeAsync } from "./types.ts";
 
+/**
+ * KeyValueStore class provides a flexible interface for working with key-value storage.
+ * It supports plugins for storage, serialization, and transformation to allow
+ * custom handling of data. The class is designed to support both synchronous
+ * and asynchronous operations.
+ *
+ * Methods:
+ * - initialize(): Prepares all plugins for use.
+ * - get(key: string): Retrieves a deserialized value from the store.
+ * - set(key: string, value: unknown): Stores a serialized value in the store.
+ * - delete(key: string): Removes an item from the store.
+ */
 export default class KeyValueStore {
   private storage: StoragePlugin;
   private serializer: SerializerPlugin;

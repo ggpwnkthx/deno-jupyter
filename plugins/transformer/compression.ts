@@ -1,7 +1,19 @@
 import { Buffer } from "node:buffer";
 import { TransformerPlugin } from "../../types.ts";
 
-export class CompressionTransformerPlugin implements TransformerPlugin {
+/**
+ * CompressionTransformerPlugin provides data compression and decompression
+ * using built-in CompressionStream and DecompressionStream APIs.
+ *
+ * Constructor:
+ * - config: Optional configuration for the compression algorithm (gzip/deflate).
+ *
+ * Methods:
+ * - initialize(): Sets up the transformer (no-op for compression).
+ * - transform(data: Uint8Array): Compresses the input data.
+ * - reverse(data: Uint8Array): Decompresses the input data.
+ */
+export default class CompressionTransformerPlugin implements TransformerPlugin {
   private algorithm: "gzip" | "deflate";
 
   constructor(config: { algorithm?: "gzip" | "deflate" } = {}) {

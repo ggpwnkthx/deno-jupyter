@@ -12,7 +12,23 @@ function isErrorWithStatusCode(error: unknown): error is { statusCode: number } 
   return typeof error === "object" && error !== null && "statusCode" in error;
 }
 
-export class AzureStoragePlugin implements StoragePlugin {
+/**
+ * AzureStoragePlugin integrates Azure Table Storage and Blob Storage to provide
+ * a scalable storage backend for key-value data. It manages small data items
+ * in Azure Table Storage and larger ones in Blob Storage.
+ *
+ * Constructor:
+ * - connectionString: Azure connection string for authentication.
+ * - tableName: Name of the Azure Table for small data storage.
+ * - partitionKey: Key used to partition data in the table.
+ *
+ * Methods:
+ * - initialize(): Ensures table and blob container existence.
+ * - get(key: string): Retrieves data from table or blob.
+ * - set(key: string, value: Uint8Array): Stores data in table or blob.
+ * - delete(key: string): Removes data from table and blob.
+ */
+export default class AzureStoragePlugin implements StoragePlugin {
   private tableServiceClient: TableServiceClient;
   private tableClient: TableClient;
   private partitionKey: string;

@@ -1,6 +1,17 @@
 import { TransformerPlugin } from "../../types.ts";
 
-export class EncryptionTransformerPlugin implements TransformerPlugin {
+/**
+ * EncryptionTransformerPlugin encrypts and decrypts data using AES-GCM.
+ *
+ * Constructor:
+ * - secretKey: String used to derive the encryption key.
+ *
+ * Methods:
+ * - initialize(): Sets up the transformer.
+ * - transform(data: Uint8Array): Encrypts the data.
+ * - reverse(data: Uint8Array): Decrypts the data back to its original form.
+ */
+export default class EncryptionTransformerPlugin implements TransformerPlugin {
   private key: Promise<CryptoKey>; // AES-GCM key
   private algorithm: string = "AES-GCM";
   private ivLength: number = 12;

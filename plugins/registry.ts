@@ -1,5 +1,13 @@
 import { Plugin } from "../types.ts";
 
+/**
+ * PluginRegistry provides a simple registry to manage and access plugins by name.
+ * It allows registering new plugins and retrieving them as needed.
+ *
+ * Methods:
+ * - register(pluginName: string, plugin: Plugin): Registers a plugin with a unique name.
+ * - get<T extends Plugin>(pluginName: string): Retrieves a plugin by name.
+ */
 class PluginRegistry {
   private plugins: Map<string, Plugin> = new Map();
 

@@ -1,7 +1,14 @@
+import { PluginConfig, PluginRegistry } from "./plugins/mod.ts";
 import SerializerPlugin from "./plugins/serializer/abstract.ts";
 import StoragePlugin from "./plugins/storage/abstract.ts";
 import TransformerPlugin from "./plugins/transformer/abstract.ts";
 import { resolveMaybeAsync } from "./utils/maybe.ts";
+
+export type KeyValueConfig = {
+  storage: PluginConfig;
+  serializer: PluginConfig;
+  transformers?: PluginConfig[];
+}
 
 /**
  * KeyValueStore class provides a flexible interface for working with key-value storage.
@@ -64,5 +71,21 @@ export default class KeyValueStore {
 
   async list(): Promise<string[]> {
     return await resolveMaybeAsync(this.storage.list())
+  }
+
+  async toJSON(): Promise<KeyValueConfig> {
+    return {
+      storage: await this.storage.toJSON(),
+      serializer: await this.serializer.toJSON(),
+      transformers: await Promise.all(this.transformers.map(async t => await t.toJSON() as PluginConfig))
+    }
+  }
+
+  static fromJSON(config: KeyValueConfig) {
+    return new this(
+      PluginRegistry.reinstantiate(config.storage),
+      PluginRegistry.reinstantiate(config.serializer),
+      config.transformers?.map(c => PluginRegistry.reinstantiate(c))
+    )
   }
 }

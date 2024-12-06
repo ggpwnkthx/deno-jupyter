@@ -1,6 +1,6 @@
 import { MaybeAsync } from "../utils/maybe.ts";
 
-type PluginConfig = {
+export type PluginConfig = {
   type: string; // Unique identifier for each plugin type
   // deno-lint-ignore no-explicit-any
   config: any | undefined; // Plugin-specific configuration
@@ -24,7 +24,7 @@ export default class Plugin {
   /**
    * Converts the plugin's state into a JSON string.
    */
-  toJSON(): MaybeAsync<PluginConfig | undefined> {
+  toJSON(): MaybeAsync<PluginConfig> {
     return {
       type: this.constructor.name,
       config: this.config
@@ -41,7 +41,7 @@ export default class Plugin {
   }
 }
 
-type PluginConstructor = new (config?: PluginConfig["config"]) => Plugin;
+type PluginConstructor<T = Plugin> = new (config?: PluginConfig["config"]) => T;
 
 export class PluginRegistry {
   static registry = new Map<string, PluginConstructor>();
@@ -50,8 +50,8 @@ export class PluginRegistry {
     this.registry.set(constructor.name, constructor);
   }
 
-  static reinstantiate(config: PluginConfig): Plugin {
-    const Constructor = this.registry.get(config.type);
+  static reinstantiate<T = Plugin>(config: PluginConfig): T {
+    const Constructor = this.registry.get(config.type) as PluginConstructor<T>;
     if (!Constructor) {
       throw new Error(`Plugin type "${config.type}" is not registered.`);
     }

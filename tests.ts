@@ -6,7 +6,9 @@ import JSONSerializerPlugin from "./plugins/serializer/json.ts";
 import DevalueSerializerPlugin from "./plugins/serializer/devalue.ts";
 import CompressionTransformerPlugin from "./plugins/transformer/compression.ts";
 import EncryptionTransformerPlugin from "./plugins/transformer/encryption.ts";
-import { SerializerPlugin, StoragePlugin, TransformerPlugin } from "./types.ts";
+import SerializerPlugin from "./plugins/serializer/abstract.ts";
+import StoragePlugin from "./plugins/storage/abstract.ts";
+import TransformerPlugin from "./plugins/transformer/abstract.ts";
 
 // Define all plugins
 const storagePlugins = [

@@ -1,4 +1,5 @@
-import { SerializerPlugin } from "../../types.ts";
+import Plugin from "../mod.ts";
+import SerializerPlugin from "./abstract.ts";
 
 /**
  * JSONSerializerPlugin implements a serializer plugin that handles JSON data.
@@ -9,11 +10,7 @@ import { SerializerPlugin } from "../../types.ts";
  * - serialize(data: unknown): Converts data into a JSON string encoded as Uint8Array.
  * - deserialize(data: Uint8Array): Decodes JSON string back to the original data.
  */
-export default class JSONSerializerPlugin implements SerializerPlugin {
-  initialize(): void {
-    console.log("JSONSerializerPlugin initialized.");
-  }
-
+export default class JSONSerializerPlugin extends Plugin implements SerializerPlugin {
   serialize(data: unknown): Uint8Array {
     return new TextEncoder().encode(JSON.stringify(data));
   }

@@ -1,4 +1,5 @@
-import { StoragePlugin } from "../../types.ts";
+import Plugin from "../mod.ts";
+import StoragePlugin from "./abstract.ts";
 
 /**
  * MemoryStoragePlugin provides an in-memory key-value storage solution.
@@ -10,12 +11,8 @@ import { StoragePlugin } from "../../types.ts";
  * - set(key: string, value: Uint8Array): Adds or updates a value in the store.
  * - delete(key: string): Removes a value from the store.
  */
-export default class MemoryStoragePlugin implements StoragePlugin {
+export default class MemoryStoragePlugin extends Plugin implements StoragePlugin {
   protected store = new Map<string, Uint8Array>();
-
-  initialize(): void {
-    console.debug("MemoryStoragePlugin initialized.");
-  }
 
   get(key: string) {
     return this.store.get(key) || null;

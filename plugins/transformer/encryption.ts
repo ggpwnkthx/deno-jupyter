@@ -1,4 +1,5 @@
-import { TransformerPlugin } from "../../types.ts";
+import Plugin from "../mod.ts";
+import TransformerPlugin from "./abstract.ts";
 
 /**
  * EncryptionTransformerPlugin encrypts and decrypts data using AES-GCM.
@@ -11,12 +12,13 @@ import { TransformerPlugin } from "../../types.ts";
  * - transform(data: Uint8Array): Encrypts the data.
  * - reverse(data: Uint8Array): Decrypts the data back to its original form.
  */
-export default class EncryptionTransformerPlugin implements TransformerPlugin {
+export default class EncryptionTransformerPlugin extends Plugin implements TransformerPlugin {
   private key: Promise<CryptoKey>; // AES-GCM key
   private algorithm: string = "AES-GCM";
   private ivLength: number = 12;
 
   constructor(secretKey: string) {
+    super()
     const encoder = new TextEncoder();
     const keyData = encoder.encode(secretKey.padEnd(32, "0").slice(0, 32));
     this.key = crypto.subtle.importKey(
@@ -26,10 +28,6 @@ export default class EncryptionTransformerPlugin implements TransformerPlugin {
       false,
       ["encrypt", "decrypt"]
     );
-  }
-
-  initialize(): void {
-    console.debug("EncryptionTransformerPlugin initialized.");
   }
 
   async transform(data: Uint8Array): Promise<Uint8Array> {

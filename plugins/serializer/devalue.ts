@@ -1,4 +1,5 @@
-import { SerializerPlugin } from "../../types.ts";
+import Plugin from "../mod.ts";
+import SerializerPlugin from "./abstract.ts";
 import { uneval } from "npm:devalue"
 
 /**
@@ -14,11 +15,7 @@ import { uneval } from "npm:devalue"
  * Note: `eval` is used during deserialization, so ensure that you trust the
  * serialized source.
  */
-export default class DevalueSerializerPlugin implements SerializerPlugin {
-  initialize(): void {
-    console.log("DevalueSerializerPlugin initialized.");
-  }
-
+export default class DevalueSerializerPlugin extends Plugin implements SerializerPlugin {
   serialize(data: unknown) {
     return new TextEncoder().encode(uneval(data));
   }

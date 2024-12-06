@@ -1,7 +1,8 @@
+import Plugin from "../mod.ts";
+import StoragePlugin from "./abstract.ts";
 import { TableClient, TableServiceClient } from "npm:@azure/data-tables";
 import { ContainerClient, BlobServiceClient } from "npm:@azure/storage-blob";
 import { Buffer } from "node:buffer";
-import { StoragePlugin } from "../../types.ts";
 
 type KeyValueTableEntity = {
   isBlob: boolean;
@@ -28,17 +29,16 @@ function isErrorWithStatusCode(error: unknown): error is { statusCode: number } 
  * - set(key: string, value: Uint8Array): Stores data in table or blob.
  * - delete(key: string): Removes data from table and blob.
  */
-export default class AzureStoragePlugin implements StoragePlugin {
+export default class AzureStoragePlugin extends Plugin implements StoragePlugin {
   private tableServiceClient: TableServiceClient;
   private tableClient: TableClient;
   private defaultPartitionKey: string;
   private blobServiceClient: BlobServiceClient;
   private blobContainerClient: ContainerClient;
-
-  private ensure: Promise<void>[];
   private static MAX_TABLE_SIZE = 64 * 1024; // 64 KB
 
   constructor(connectionString: string, tableName: string, partitionKey?: string) {
+    super()
     this.tableServiceClient = TableServiceClient.fromConnectionString(connectionString);
     this.tableClient = TableClient.fromConnectionString(connectionString, tableName);
     this.blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
@@ -61,11 +61,6 @@ export default class AzureStoragePlugin implements StoragePlugin {
     if (!exists) {
       await this.blobContainerClient.create();
     }
-  }
-
-  async initialize(): Promise<void> {
-    await Promise.all(this.ensure);
-    console.debug("AzureStoragePlugin initialized.");
   }
 
   /**

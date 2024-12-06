@@ -1,4 +1,6 @@
-import { StoragePlugin, SerializerPlugin, TransformerPlugin } from "./types.ts";
+import SerializerPlugin from "./plugins/serializer/abstract.ts";
+import StoragePlugin from "./plugins/storage/abstract.ts";
+import TransformerPlugin from "./plugins/transformer/abstract.ts";
 import { resolveMaybeAsync } from "./utils/maybe.ts";
 
 /**

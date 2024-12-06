@@ -1,5 +1,6 @@
+import Plugin from "../mod.ts";
+import TransformerPlugin from "./abstract.ts";
 import { Buffer } from "node:buffer";
-import { TransformerPlugin } from "../../types.ts";
 
 /**
  * CompressionTransformerPlugin provides data compression and decompression
@@ -13,15 +14,12 @@ import { TransformerPlugin } from "../../types.ts";
  * - transform(data: Uint8Array): Compresses the input data.
  * - reverse(data: Uint8Array): Decompresses the input data.
  */
-export default class CompressionTransformerPlugin implements TransformerPlugin {
+export default class CompressionTransformerPlugin extends Plugin implements TransformerPlugin {
   private algorithm: "gzip" | "deflate";
 
   constructor(config: { algorithm?: "gzip" | "deflate" } = {}) {
+    super()
     this.algorithm = config.algorithm || "gzip";
-  }
-
-  initialize(): void {
-    console.debug("CompressionTransformerPlugin initialized.");
   }
 
   async transform(data: Uint8Array): Promise<Uint8Array> {

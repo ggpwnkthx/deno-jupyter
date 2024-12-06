@@ -14,9 +14,9 @@ import { resolveMaybeAsync } from "./utils/maybe.ts";
  * - delete(key: string): Removes an item from the store.
  */
 export default class KeyValueStore {
-  private storage: StoragePlugin;
-  private serializer: SerializerPlugin;
-  private transformers: TransformerPlugin[];
+  protected storage: StoragePlugin;
+  protected serializer: SerializerPlugin;
+  protected transformers: TransformerPlugin[];
 
   constructor(
     storage: StoragePlugin,
@@ -36,7 +36,7 @@ export default class KeyValueStore {
     }
   }
 
-  async get(key: string): Promise<unknown | null> {
+  async get<T = unknown>(key: string): Promise<T | null> {
     const storedData = await resolveMaybeAsync(this.storage.get(key));
     if (!storedData) return null;
 
@@ -44,11 +44,10 @@ export default class KeyValueStore {
     for (const transformer of [...this.transformers].reverse()) {
       data = await resolveMaybeAsync(transformer.reverse(data));
     }
-
     return await resolveMaybeAsync(this.serializer.deserialize(data));
   }
 
-  async set(key: string, value: unknown): Promise<void> {
+  async set<T = unknown>(key: string, value: T): Promise<void> {
     let data = await resolveMaybeAsync(this.serializer.serialize(value));
     for (const transformer of this.transformers) {
       data = await resolveMaybeAsync(transformer.transform(data));

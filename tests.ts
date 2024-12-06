@@ -3,6 +3,7 @@ import KeyValueStore from "./mod.ts";
 import MemoryStoragePlugin from "./plugins/storage/memory.ts";
 import PersistentStoragePlugin from "./plugins/storage/persistent.ts";
 import JSONSerializerPlugin from "./plugins/serializer/json.ts";
+import DevalueSerializerPlugin from "./plugins/serializer/devalue.ts";
 import CompressionTransformerPlugin from "./plugins/transformer/compression.ts";
 import EncryptionTransformerPlugin from "./plugins/transformer/encryption.ts";
 import { SerializerPlugin, StoragePlugin, TransformerPlugin } from "./types.ts";
@@ -15,6 +16,7 @@ const storagePlugins = [
 
 const serializerPlugins = [
   new JSONSerializerPlugin(),
+  new DevalueSerializerPlugin(),
 ];
 
 const transformerPlugins = [

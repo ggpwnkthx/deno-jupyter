@@ -19,11 +19,11 @@ export default class DevalueSerializerPlugin implements SerializerPlugin {
     console.log("DevalueSerializerPlugin initialized.");
   }
 
-  serialize(data: unknown): Uint8Array {
+  serialize(data: unknown) {
     return new TextEncoder().encode(uneval(data));
   }
 
-  deserialize(data: Uint8Array): unknown {
-    return eval(new TextDecoder().decode(data));
+  deserialize(data: Uint8Array) {
+    return eval(`(${new TextDecoder().decode(data)})`);
   }
 }

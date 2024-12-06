@@ -18,7 +18,7 @@ export default class JSONSerializerPlugin implements SerializerPlugin {
     return new TextEncoder().encode(JSON.stringify(data));
   }
 
-  deserialize(data: Uint8Array): unknown {
+  deserialize(data: Uint8Array) {
     return JSON.parse(new TextDecoder().decode(data));
   }
 }

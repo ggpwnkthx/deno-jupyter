@@ -140,7 +140,7 @@ export type SerializerPlugin = Plugin & {
    * @param data - The serialized `Uint8Array` to be deserialized.
    * @returns The original data structure.
    */
-  deserialize(data: Uint8Array): MaybeAsync<unknown>;
+  deserialize<T = unknown>(data: Uint8Array): MaybeAsync<T>;
 };
 
 /**

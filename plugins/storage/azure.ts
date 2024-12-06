@@ -1,4 +1,4 @@
-import Plugin from "../mod.ts";
+import Plugin, { PluginRegistry } from "../mod.ts";
 import StoragePlugin from "./abstract.ts";
 import { TableClient, TableServiceClient } from "npm:@azure/data-tables";
 import { ContainerClient, BlobServiceClient } from "npm:@azure/storage-blob";
@@ -42,7 +42,7 @@ export default class AzureStoragePlugin extends Plugin implements StoragePlugin 
     tableName: string, 
     partitionKey?: string
   }) {
-    super()
+    super(config)
     this.tableServiceClient = TableServiceClient.fromConnectionString(config.connectionString);
     this.tableClient = TableClient.fromConnectionString(config.connectionString, config.tableName);
     this.blobServiceClient = BlobServiceClient.fromConnectionString(config.connectionString);
@@ -180,3 +180,5 @@ export default class AzureStoragePlugin extends Plugin implements StoragePlugin 
     });
   }
 }
+
+PluginRegistry.register(AzureStoragePlugin);

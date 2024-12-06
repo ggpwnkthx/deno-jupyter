@@ -1,4 +1,4 @@
-import Plugin from "../mod.ts";
+import Plugin, { PluginRegistry } from "../mod.ts";
 import TransformerPlugin from "./abstract.ts";
 import { Buffer } from "node:buffer";
 
@@ -18,7 +18,7 @@ export default class CompressionTransformerPlugin extends Plugin implements Tran
   private algorithm: "gzip" | "deflate";
 
   constructor(config: { algorithm?: "gzip" | "deflate" } = {}) {
-    super()
+    super(config)
     this.algorithm = config.algorithm || "gzip";
   }
 
@@ -52,3 +52,5 @@ export default class CompressionTransformerPlugin extends Plugin implements Tran
     return Uint8Array.from(Buffer.concat(chunks));
   }
 }
+
+PluginRegistry.register(CompressionTransformerPlugin);

@@ -1,4 +1,4 @@
-import Plugin from "../mod.ts";
+import Plugin, { PluginRegistry } from "../mod.ts";
 import SerializerPlugin from "./abstract.ts";
 
 /**
@@ -19,3 +19,5 @@ export default class JSONSerializerPlugin extends Plugin implements SerializerPl
     return JSON.parse(new TextDecoder().decode(data));
   }
 }
+
+PluginRegistry.register(JSONSerializerPlugin);

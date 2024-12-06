@@ -1,4 +1,4 @@
-import Plugin from "../mod.ts";
+import Plugin, { PluginRegistry } from "../mod.ts";
 import SerializerPlugin from "./abstract.ts";
 import { uneval } from "npm:devalue"
 
@@ -24,3 +24,5 @@ export default class DevalueSerializerPlugin extends Plugin implements Serialize
     return eval(`(${new TextDecoder().decode(data)})`);
   }
 }
+
+PluginRegistry.register(DevalueSerializerPlugin);

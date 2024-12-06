@@ -1,4 +1,4 @@
-import Plugin from "../mod.ts";
+import Plugin, { PluginRegistry } from "../mod.ts";
 import StoragePlugin from "./abstract.ts";
 
 /**
@@ -30,3 +30,5 @@ export default class MemoryStoragePlugin extends Plugin implements StoragePlugin
     return Array.from(this.store.keys());
   }
 }
+
+PluginRegistry.register(MemoryStoragePlugin);

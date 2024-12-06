@@ -1,4 +1,4 @@
-import Plugin from "../mod.ts";
+import Plugin, { PluginRegistry } from "../mod.ts";
 import TransformerPlugin from "./abstract.ts";
 
 /**
@@ -18,7 +18,7 @@ export default class EncryptionTransformerPlugin extends Plugin implements Trans
   private ivLength: number = 12;
 
   constructor(config: { secretKey: string }) {
-    super()
+    super(config)
     const encoder = new TextEncoder();
     const keyData = encoder.encode(config.secretKey.padEnd(32, "0").slice(0, 32));
     this.key = crypto.subtle.importKey(
@@ -58,3 +58,5 @@ export default class EncryptionTransformerPlugin extends Plugin implements Trans
     return new Uint8Array(decrypted);
   }
 }
+
+PluginRegistry.register(EncryptionTransformerPlugin);

@@ -1,10 +1,11 @@
+import { PluginRegistry } from "../mod.ts";
 import MemoryStoragePlugin from "./memory.ts";
 
 export default class PersistentStoragePlugin extends MemoryStoragePlugin {
   private filePath: string;
 
   constructor(config: { filePath: string }) {
-    super()
+    super(config)
     this.filePath = config.filePath;
   }
   
@@ -50,3 +51,5 @@ export default class PersistentStoragePlugin extends MemoryStoragePlugin {
     await Deno.writeTextFile(this.filePath, JSON.stringify(obj, null, 2));
   }
 }
+
+PluginRegistry.register(PersistentStoragePlugin);

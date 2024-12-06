@@ -13,7 +13,7 @@ import TransformerPlugin from "./plugins/transformer/abstract.ts";
 // Define all plugins
 const storagePlugins = [
   new MemoryStoragePlugin(),
-  new PersistentStoragePlugin(`./test-cache.json`),
+  new PersistentStoragePlugin({ filePath: `./test-cache.json` }),
 ];
 
 const serializerPlugins = [
@@ -23,7 +23,7 @@ const serializerPlugins = [
 
 const transformerPlugins = [
   new CompressionTransformerPlugin(),
-  new EncryptionTransformerPlugin("my-secret-key"),
+  new EncryptionTransformerPlugin({ secretKey: "my-secret-key" }),
 ];
 
 // Function to generate a random key

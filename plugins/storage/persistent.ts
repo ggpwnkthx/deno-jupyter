@@ -3,9 +3,9 @@ import MemoryStoragePlugin from "./memory.ts";
 export default class PersistentStoragePlugin extends MemoryStoragePlugin {
   private filePath: string;
 
-  constructor(filePath: string) {
+  constructor(config: { filePath: string }) {
     super()
-    this.filePath = filePath;
+    this.filePath = config.filePath;
   }
   
   override async initialize(): Promise<void> {

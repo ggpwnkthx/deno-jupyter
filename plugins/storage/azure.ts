@@ -37,13 +37,17 @@ export default class AzureStoragePlugin extends Plugin implements StoragePlugin 
   private blobContainerClient: ContainerClient;
   private static MAX_TABLE_SIZE = 64 * 1024; // 64 KB
 
-  constructor(connectionString: string, tableName: string, partitionKey?: string) {
+  constructor(config: { 
+    connectionString: string, 
+    tableName: string, 
+    partitionKey?: string
+  }) {
     super()
-    this.tableServiceClient = TableServiceClient.fromConnectionString(connectionString);
-    this.tableClient = TableClient.fromConnectionString(connectionString, tableName);
-    this.blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-    this.blobContainerClient = this.blobServiceClient.getContainerClient(tableName);
-    this.defaultPartitionKey = partitionKey ?? `default`;
+    this.tableServiceClient = TableServiceClient.fromConnectionString(config.connectionString);
+    this.tableClient = TableClient.fromConnectionString(config.connectionString, config.tableName);
+    this.blobServiceClient = BlobServiceClient.fromConnectionString(config.connectionString);
+    this.blobContainerClient = this.blobServiceClient.getContainerClient(config.tableName);
+    this.defaultPartitionKey = config.partitionKey ?? `default`;
 
     this.ensure = [this.ensureTableExists(), this.ensureContainerExists()];
   }

@@ -17,10 +17,10 @@ export default class EncryptionTransformerPlugin extends Plugin implements Trans
   private algorithm: string = "AES-GCM";
   private ivLength: number = 12;
 
-  constructor(secretKey: string) {
+  constructor(config: { secretKey: string }) {
     super()
     const encoder = new TextEncoder();
-    const keyData = encoder.encode(secretKey.padEnd(32, "0").slice(0, 32));
+    const keyData = encoder.encode(config.secretKey.padEnd(32, "0").slice(0, 32));
     this.key = crypto.subtle.importKey(
       "raw",
       keyData,

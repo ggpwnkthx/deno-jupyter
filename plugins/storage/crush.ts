@@ -45,7 +45,7 @@ class CRUSHStoragePlugin implements StoragePlugin {
    * @param key - The key to map to a node.
    * @returns The selected node's ID.
    */
-  private selectNode(key: Deno.KvKey): string {
+  private selectNode(key: string): string {
     const nodeArray = Array.from(this.availableNodes);
     const hash = [...key.map(part => part.toString()).join(":")].reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return nodeArray[hash % nodeArray.length];
@@ -59,7 +59,7 @@ class CRUSHStoragePlugin implements StoragePlugin {
     console.debug("CRUSHStoragePlugin initialized.");
   }
 
-  async get(key: Deno.KvKey) {
+  async get(key: string) {
     if (this.availableNodes.size === 0) {
       throw new Error("No available nodes.");
     }
@@ -69,7 +69,7 @@ class CRUSHStoragePlugin implements StoragePlugin {
     return await resolveMaybeAsync(node?.get(key)) ?? null;
   }
 
-  async set(key: Deno.KvKey, value: Uint8Array) {
+  async set(key: string, value: Uint8Array) {
     if (this.availableNodes.size === 0) {
       throw new Error("No available nodes.");
     }
@@ -81,7 +81,7 @@ class CRUSHStoragePlugin implements StoragePlugin {
     }
   }
 
-  async delete(key: Deno.KvKey) {
+  async delete(key: string) {
     if (this.availableNodes.size === 0) {
       throw new Error("No available nodes.");
     }

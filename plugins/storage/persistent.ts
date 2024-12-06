@@ -29,12 +29,12 @@ export default class PersistentStoragePlugin extends MemoryStoragePlugin {
     }
   }
 
-  override async set(key: Deno.KvKey, value: Uint8Array){
+  override async set(key: string, value: Uint8Array){
     super.set(key, value);
     await this.saveToFile();
   }
 
-  override async delete(key: Deno.KvKey) {
+  override async delete(key: string) {
     super.delete(key);
     await this.saveToFile();
   }

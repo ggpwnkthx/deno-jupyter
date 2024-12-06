@@ -5,7 +5,6 @@ import PersistentStoragePlugin from "./plugins/storage/persistent.ts";
 import JSONSerializerPlugin from "./plugins/serializer/json.ts";
 import CompressionTransformerPlugin from "./plugins/transformer/compression.ts";
 import EncryptionTransformerPlugin from "./plugins/transformer/encryption.ts";
-import { encode } from "./utils/keys.ts"
 import { SerializerPlugin, StoragePlugin, TransformerPlugin } from "./types.ts";
 
 // Define all plugins
@@ -24,8 +23,8 @@ const transformerPlugins = [
 ];
 
 // Function to generate a random key
-function generateRandomKey(): Deno.KvKey {
-  return ["test", "key", crypto.randomUUID()];
+function generateRandomKey(): string {
+  return crypto.randomUUID();
 }
 
 // Test value with diverse data types
@@ -55,14 +54,14 @@ const test = async (
   const keys = await store.list();
 
   assertEquals(keys.length, 2, "The list should contain exactly two keys.");
-  assertEquals(keys.map((key) => encode(key)).includes(encode(testKey1)), true, "The list should contain testKey1.");
-  assertEquals(keys.map((key) => encode(key)).includes(encode(testKey2)), true, "The list should contain testKey2.");
+  assertEquals(keys.includes(testKey1), true, "The list should contain testKey1.");
+  assertEquals(keys.includes(testKey2), true, "The list should contain testKey2.");
 
   await store.delete(testKey1);
 
   const keysAfterDelete = await store.list();
   assertEquals(keysAfterDelete.length, 1, "The list should contain exactly one key after delete.");
-  assertEquals(keysAfterDelete.map((key) => encode(key)).includes(encode(testKey2)), true, "The list should still contain testKey2.");
+  assertEquals(keysAfterDelete.includes(testKey2), true, "The list should still contain testKey2.");
 
   await store.delete(testKey2);
 }

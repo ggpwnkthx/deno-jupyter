@@ -36,7 +36,7 @@ export default class KeyValueStore {
     }
   }
 
-  async get(key: Deno.KvKey): Promise<unknown | null> {
+  async get(key: string): Promise<unknown | null> {
     const storedData = await resolveMaybeAsync(this.storage.get(key));
     if (!storedData) return null;
 
@@ -48,7 +48,7 @@ export default class KeyValueStore {
     return await resolveMaybeAsync(this.serializer.deserialize(data));
   }
 
-  async set(key: Deno.KvKey, value: unknown): Promise<void> {
+  async set(key: string, value: unknown): Promise<void> {
     let data = await resolveMaybeAsync(this.serializer.serialize(value));
     for (const transformer of this.transformers) {
       data = await resolveMaybeAsync(transformer.transform(data));
@@ -57,11 +57,11 @@ export default class KeyValueStore {
     await resolveMaybeAsync(this.storage.set(key, data));
   }
 
-  async delete(key: Deno.KvKey): Promise<void> {
+  async delete(key: string): Promise<void> {
     await resolveMaybeAsync(this.storage.delete(key));
   }
 
-  async list(): Promise<Deno.KvKey[]> {
+  async list(): Promise<string[]> {
     return await resolveMaybeAsync(this.storage.list())
   }
 }

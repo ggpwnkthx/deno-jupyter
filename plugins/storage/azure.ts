@@ -38,12 +38,12 @@ export default class AzureStoragePlugin implements StoragePlugin {
   private ensure: Promise<void>[];
   private static MAX_TABLE_SIZE = 64 * 1024; // 64 KB
 
-  constructor(connectionString: string, tableName: string, partitionKey: string) {
+  constructor(connectionString: string, tableName: string, partitionKey?: string) {
     this.tableServiceClient = TableServiceClient.fromConnectionString(connectionString);
     this.tableClient = TableClient.fromConnectionString(connectionString, tableName);
     this.blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
     this.blobContainerClient = this.blobServiceClient.getContainerClient(tableName);
-    this.defaultPartitionKey = partitionKey;
+    this.defaultPartitionKey = partitionKey ?? `default`;
 
     this.ensure = [this.ensureTableExists(), this.ensureContainerExists()];
   }
@@ -68,17 +68,34 @@ export default class AzureStoragePlugin implements StoragePlugin {
     console.debug("AzureStoragePlugin initialized.");
   }
 
-  private serializeKey(key: Deno.KvKey): string {
-    return btoa(JSON.stringify(key))
+  /**
+   * Azure Table Row Keys and Blob paths may not contain the following characters:
+   *  Forward slash `/`
+   *  Back slach `\`
+   *  Number sign `#`
+   *  Question mark `?` 
+   *  Horizontal tab `\t`
+   *  Linefeed `\n`
+   *  Carriage return `\r`
+   *  Control characters from `U+0000` to `U+001F`
+   *  Control characters from `U+007F` to `U+009F`
+   * 
+   * To accomodate this, we can just Base64 encode the key.
+   * 
+   * @param key 
+   * @returns 
+   */
+  private encodeKey(key: string): string {
+    return btoa(key)
   }
 
-  private deserializeKey(key: string): Deno.KvKey {
-    return JSON.parse(atob(key))
+  private decodeKey(key: string): string {
+    return atob(key)
   }
 
-  async get(key: Deno.KvKey): Promise<Uint8Array | null> {
+  async get(key: string): Promise<Uint8Array | null> {
     const partitionKey = this.defaultPartitionKey
-    const rowKey = this.serializeKey(key)
+    const rowKey = this.encodeKey(key)
     try {
       const entity = await this.tableClient.getEntity<KeyValueTableEntity>(partitionKey, rowKey);
 
@@ -101,9 +118,9 @@ export default class AzureStoragePlugin implements StoragePlugin {
     }
   }
 
-  async set(key: Deno.KvKey, value: Uint8Array): Promise<void> {
+  async set(key: string, value: Uint8Array): Promise<void> {
     const partitionKey = this.defaultPartitionKey
-    const rowKey = this.serializeKey(key)
+    const rowKey = this.encodeKey(key)
     if (value.byteLength <= AzureStoragePlugin.MAX_TABLE_SIZE) {
       await this.tableClient.upsertEntity<KeyValueTableEntity>({
         partitionKey,
@@ -123,9 +140,9 @@ export default class AzureStoragePlugin implements StoragePlugin {
     }
   }
 
-  async delete(key: Deno.KvKey): Promise<void> {
+  async delete(key: string): Promise<void> {
     const partitionKey = this.defaultPartitionKey
-    const rowKey = this.serializeKey(key)
+    const rowKey = this.encodeKey(key)
     try {
       const entity = await this.tableClient.getEntity<KeyValueTableEntity>(partitionKey, rowKey);
 
@@ -141,10 +158,10 @@ export default class AzureStoragePlugin implements StoragePlugin {
     }
   }
 
-  async list(): Promise<Deno.KvKey[]> {
-    const keys: Deno.KvKey[] = [];
+  async list(): Promise<string[]> {
+    const keys: string[] = [];
     for await (const entity of this.tableClient.listEntities<KeyValueTableEntity>()) {
-      entity.rowKey && keys.push(this.deserializeKey(entity.rowKey));
+      entity.rowKey && keys.push(this.decodeKey(entity.rowKey));
     }
     return keys;
   }

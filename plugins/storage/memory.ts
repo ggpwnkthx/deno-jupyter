@@ -1,5 +1,4 @@
 import { StoragePlugin } from "../../types.ts";
-import { decode, encode } from "../../utils/keys.ts";
 
 /**
  * MemoryStoragePlugin provides an in-memory key-value storage solution.
@@ -18,19 +17,19 @@ export default class MemoryStoragePlugin implements StoragePlugin {
     console.debug("MemoryStoragePlugin initialized.");
   }
 
-  get(key: Deno.KvKey) {
-    return this.store.get(encode(key)) || null;
+  get(key: string) {
+    return this.store.get(key) || null;
   }
 
-  set(key: Deno.KvKey, value: Uint8Array) {
-    this.store.set(encode(key), value);
+  set(key: string, value: Uint8Array) {
+    this.store.set(key, value);
   }
 
-  delete(key: Deno.KvKey) {
-    this.store.delete(encode(key));
+  delete(key: string) {
+    this.store.delete(key);
   }
 
-  list(): Deno.KvKey[] {
-    return Array.from(this.store.keys().map((key) => decode(key)));
+  list(): string[] {
+    return Array.from(this.store.keys());
   }
 }

@@ -6,7 +6,6 @@ import StoragePlugin from "./abstract.ts";
  * It is primarily for testing and temporary storage use cases.
  *
  * Methods:
- * - initialize(): Initializes the in-memory store.
  * - get(key: string): Retrieves a value from the store.
  * - set(key: string, value: Uint8Array): Adds or updates a value in the store.
  * - delete(key: string): Removes a value from the store.
